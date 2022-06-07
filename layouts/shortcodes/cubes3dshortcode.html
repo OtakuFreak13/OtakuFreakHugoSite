@@ -1,0 +1,104 @@
+<div class="metaballs container">
+
+    <h1>
+        <center>Canvas Sandbox - Cubes in space</center>
+    </h1>
+
+    <div class="container">
+        <canvas id="canvasCubes3D" width="800" height="500"></canvas>
+        <div id="hud">
+            <div>FPS: <span id="fpsCubes"> </span> </div>
+        </div>
+    </div>
+
+
+
+
+    <p>
+        <input id="playCubes" type="button" value="play" />
+        <input id="pauseCubes" type="button" value="pause" />
+        Speed: <input id="speed" type="range" step="0.01" min="0.01" max="10.0" value="0.1" />
+    </p>
+    <table>
+        <tr>
+            <th></th>
+            <th>x</th>
+            <th>y</th>
+            <th>z</th>
+        </tr>
+        <tr>
+            <td>Eye point</td>
+            <td><input id="eyeX" name="eyeX" type="number" value="0" /></td>
+            <td><input id="eyeY" name="eyeY" type="number" value="-15" /></td>
+            <td><input id="eyeZ" name="eyeZ" type="number" value="15" /></td>
+        </tr>
+        <tr>
+            <td>Look at point</td>
+            <td><input id="atX" name="atX" type="number" value="0" /></td>
+            <td><input id="atY" name="atY" type="number" value="0" /></td>
+            <td><input id="atZ" name="atZ" type="number" value="0" /></td>
+        </tr>
+        <tr>
+            <td>Up vector</td>
+            <td><input id="upX" name="upX" type="number" value="0" /></td>
+            <td><input id="upY" name="upY" type="number" value="0" /></td>
+            <td><input id="upZ" name="upZ" type="number" value="0" /></td>
+        </tr>
+    </table>
+
+    <table>
+        <tr>
+            <th></th>
+            <th>Angle</th>
+            <th>x</th>
+            <th>y</th>
+            <th>z</th>
+        </tr>
+        <tr>
+            <td>Rotate</td>
+            <td><input id="angle" name="angle" type="number" value="0" /></td>
+            <td><input id="rx" name="rx" type="number" value="0" /></td>
+            <td><input id="ry" name="ry" type="number" value="0" /></td>
+            <td><input id="rz" name="rz" type="number" value="0" /></td>
+        </tr>
+        <tr>
+            <td>Translate</td>
+            <td></td>
+            <td><input id="tx" name="tx" type="number" value="0" /></td>
+            <td><input id="ty" name="ty" type="number" value="0" /></td>
+            <td><input id="tz" name="tz" type="number" value="0" /></td>
+        </tr>
+    </table>
+
+    <table>
+        <tr>
+            <th></th>
+            <th>fov</th>
+            <th>aspect</th>
+            <th>near</th>
+            <th>far</th>
+        </tr>
+        <tr>
+            <td>Projection</td>
+            <td><input id="fov" name="fov" type="number" value="0" /></td>
+            <td><input id="aspect" name="aspect" type="number" value="1.6" /></td>
+            <td><input id="near" name="near" type="number" value="0" /></td>
+            <td><input id="far" name="far" type="number" value="0" /></td>
+        </tr>
+    </table>
+
+    <input id="update" type="button" value="Update" />
+
+
+    <img id="chessTexImg"   src="{{ .Site.BaseURL }}/images/chessBoard.jpg" width="0" height="0">
+    <img id="cubeTexImg"    src="{{ .Site.BaseURL }}/images/square-pattern.jpg" width="0" height="0">
+    <img id="helixTexImg"   src="{{ .Site.BaseURL }}/images/helix-nebula.jpg" width="0" height="0">
+
+    <script type="text/javascript" src="{{ .Site.BaseURL }}/lib/gl-matrix-min.js"></script>
+    <script type="text/javascript" src="{{ .Site.BaseURL }}/lib/webgl-utils.js"></script>
+    <script type="text/javascript" src="{{ .Site.BaseURL }}/lib/webgl-debug.js"></script>
+    <script type="text/javascript" src="{{ .Site.BaseURL }}/lib/cuon-utils.js"></script>
+    <script type="text/javascript" src="{{ .Site.BaseURL }}/lib/cuon-matrix.js"></script>
+    <script type="text/javascript" src="{{ .Site.BaseURL }}/lib/shader.js"></script>
+    <script type="text/javascript" src="{{ .Site.BaseURL }}/js/cubesin3d.js"></script>
+</div>

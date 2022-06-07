@@ -1,0 +1,324 @@
+<div class="metaballs container">
+
+    <canvas id="canvas1" width="800" height="500"></canvas>
+    
+    <p>
+        <div class="fps">FPS: <span id="fps"> </span> </div>
+    </p>
+
+    <p>
+        <input id="play" type="button" value="play" />
+        <input id="pause" type="button" value="pause" />
+    </p>
+
+    <p> 
+        To move around in scene use WASD and spacebar/shift to go up and down .
+    </p>
+
+    <!-- vertex shader -->
+    <script id="vertex-shader" type="x-shader/x-vertex">
+
+        attribute vec4 a_Position;
+        attribute float a_PointSize;
+        uniform mat4 u_MVMatrix;
+        uniform mat4 u_PMatrix;
+        varying vec4 fragPos;
+        varying vec3 rayPos;
+        varying vec3 rayDir;
+        varying vec3 objPos;
+        //uniform vec3 u_camPos;
+        
+        void main() {
+            //gl_Position = a_Position;
+            //fragPos = a_Position;
+    
+           // vec2 vertex = a_Position * 2.0 - vec2(1.0, 1.0);
+    //
+           // vec4 farPlane = u_PMatrix * u_MVMatrix * vec4(vertex, 1.0, 1.0);
+           // farPlane = farPlane / farPlane.w;
+    //
+           // vec4 nearPlane = u_PMatrix * u_MVMatrix * vec4(vertex, -1.0, 1.0);
+           // nearPlane = nearPlane / nearPlane.w;
+    //
+           // rayDir = (farPlane.xyz - nearPlane.xyz); 
+           // rayPos = nearPlane.xyz;
+    //
+           // gl_Position = vec4(vertex, 0.0, 1.0);
+            
+             gl_Position = u_PMatrix * u_MVMatrix * a_Position;
+             objPos = vec4(u_MVMatrix * a_Position).xyz;
+             gl_PointSize = a_PointSize;
+    
+            //mat4 mv = inverse(u_MVMatrix);
+    
+            //vec4 p;
+            //p = (u_PMatrix * u_MVMatrix) * vec4(a_Position.x / 800.0, a_Position.y / 500.0, a_Position.z, 1.0);
+           // rayPos = u_camPos;//p.xyz;
+            //rayPos.x = mv[3][0];
+            //rayPos.y = mv[3][1];
+            //rayPos.z = mv[3][2];
+            //p -= (u_PMatrix * u_MVMatrix) * vec4(0.0, 0.0, -1.0, 1.0);
+            //rayDir = normalize(p.xyz);
+            
+        }
+        
+    </script>
+    
+    <!-- fragment shader -->
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;    
+        uniform vec4 u_FragColor;
+        uniform vec3 u_CamPos;
+        uniform float a_TimeSinceStart;
+        uniform float a_TimeLast;
+        uniform float u_depthA;
+        uniform float u_depthB;
+        uniform float u_pitch;
+        uniform float u_yaw;
+        //uniform vec2 u_MousePos;
+       // uniform mat4 u_invertMat;
+        varying vec4 fragPos;
+        varying vec3 rayPos;
+        varying vec3 rayDir;
+        varying vec3 objPos;
+    
+        //float dt = a_TimeSinceStart - a_TimeLast;
+    
+        const int MAX_MARCHING_STEPS = 255;
+        const float MIN_DIST = 0.01;
+        const float MAX_DIST = 100.0;
+        const float EPSILON = 0.0001;
+
+
+      // rotation stuff
+
+        mat4 rotationMatrix(vec3 axis, float angle) 
+        {
+            axis = normalize(axis);
+            float s = sin(angle);
+            float c = cos(angle);
+            float oc = 1.0 - c;
+            
+            return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+                        oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+                        oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+                        0.0,                                0.0,                                0.0,                                1.0);
+        }
+        
+        vec3 rotate(vec3 v, vec3 axis, float angle) 
+        {
+            mat4 m = rotationMatrix(axis, angle);
+            return (m * vec4(v, 1.0)).xyz;
+        }
+    
+        // end of rotation stuff
+    
+    
+        // moving sdf from on pos to another and back again
+        vec3 oscilate(vec3 pos, vec3 stepSize, float speed) 
+        {
+            pos += stepSize * sin(a_TimeSinceStart * speed);
+            return pos;
+        }
+    
+        // smooth min taken from iquilezles
+        float sMin( float a, float b, float k )
+        {
+            float h = max( k-abs(a-b), 0.0 )/k;
+            return min( a, b ) - h * h * k * (1.0 / 4.0);
+        }
+    
+        // sphereSDF taken from iquilezles
+        float sphereSDF(vec3 point, float radius) {
+            return length(point) - radius;
+        }
+        // boxSDF taken from iquilezles
+        float boxSDF(vec3 point, vec3 halfSizeAxis)
+        {
+          vec3 q = abs(point) - halfSizeAxis;
+          return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
+        }
+        // sdTorus taken from iquilezles
+        float sdTorus(vec3 point, vec2 hole)
+        {
+          vec2 q = vec2(length(point.xz) - hole.x, point.y);
+          return length(q)-hole.y;
+        }
+    
+        // sceneSDF has all objects in world
+        float sceneSDF(vec3 samplePoint) {
+            float minDist = MAX_DIST;
+    
+            // Sphere at Mouse position - didn't get this to work correctly
+         //   vec4 mousePos = vec4(u_MousePos, 1.0, 1.0);
+         //   //mousePos = u_invertMat * mousePos; //* vec4(8, 5, 1.0, 1.0);
+         //   mousePos.z = -2.0;
+         //   float mouseSphere = sphereSDF(samplePoint - mousePos.xyz, 0.70);
+         //   minDist = sMin(minDist, mouseSphere, 2.0);
+    
+            // Sphere 1
+            vec3 spherePos = oscilate(vec3(-1.0, -2.0, -2.0), vec3(2.5, 3.50, -1.0), 0.5); // vec3(2.0, 1.0, -3.0);
+            float sphere = sphereSDF(samplePoint - spherePos, 0.70);
+           // if(minDist > sphere)
+           // {
+           //     minDist = sphere;
+           // }
+            minDist = sMin(minDist, sphere, 2.0);
+            
+            // Sphere 2
+            vec3 spherePos2 = oscilate(vec3(1.0, 1.0, -2.0), vec3(6, 1, 0), 0.3);
+            float sphere2 = sphereSDF(samplePoint - spherePos2, 0.70);
+            minDist = sMin(minDist, sphere2, 2.0);
+    
+            // Sphere 3
+            vec3 spherePos3 = oscilate(vec3(-1.0, -1.0, -5.0), vec3(5, 10, 3), 1.3);
+            float sphere3 = sphereSDF(samplePoint - spherePos3, 0.70);
+            minDist = sMin(minDist, sphere3, 2.0);
+    
+            // Sphere 4
+            vec3 spherePos4 = oscilate(vec3(-0.30, 0.30, -2.0), vec3(6, 4, 0), 0.5);
+            float sphere4 = sphereSDF(samplePoint - spherePos4, 0.70);
+            minDist = sMin(minDist, sphere4, 2.0);
+    
+            // Sphere 5
+            vec3 spherePos5 = oscilate(vec3(8.0, 7.0, -2.0), vec3(-6, -7, 0), 0.1);
+            // rotating before doing "samplePoint - pos" will rotate the object around a point in the world
+            spherePos5 = rotate(spherePos5, vec3(0.20, -0.50, 0.0), a_TimeSinceStart / 1.0);
+            float sphere5 = sphereSDF(samplePoint - spherePos5, 0.70);
+            minDist = sMin(minDist, sphere5, 2.0);
+    
+            // Torus 1
+            vec3 torusPos = vec3(0.0, 1.0, -2.0);//oscilate(vec3(-5.0, 1.0, -2.0), vec3(4, -1, 0), 1.0);
+            torusPos = samplePoint - torusPos;
+            torusPos = rotate(torusPos, vec3(1.0, 1.0, 1.0), a_TimeSinceStart / 1.0);
+            float torus = sdTorus(torusPos, vec2(5.0 , 0.50));
+            minDist = sMin(minDist, torus, 2.0);
+    
+            // Floor
+            vec3 floorPos = samplePoint - vec3(0.0, -5.0, 0.0);//vec3(-1.0 + a_TimeSinceStart * 0.5, -2.0, -2.0);
+            float floor = boxSDF(floorPos, vec3(30.0, 0.00, 30.0));
+            minDist = sMin(minDist, floor, 2.0);
+    
+    
+            // Box 1
+            //vec3 boxPosMove = oscilate(vec3(-1.0, -2.0, -2.0), vec3(2.5, 3.50, -1.0), 0.5);
+            vec3 boxPos = samplePoint - vec3(0.0, 1.0, -3.0);//boxPosMove;//vec3(-1.0 + a_TimeSinceStart * 0.5, -2.0, -2.0);
+            vec3 boxRot = rotate(boxPos, vec3(1.0, 1.0, 0.50), a_TimeSinceStart / 1.0);
+            float box = boxSDF(boxRot, vec3(1.0, 1.0, 1.0)); //sphereSDF(boxPos, 0.50); //
+            minDist = sMin(minDist, box, 2.0);
+    
+            
+            // return what was closest of all the objects in scene
+            return minDist;//sphereSDF(samplePoint - objPos, 1.0);//boxSDF(samplePoint, vec3(1,1,1));//sphereSDF(samplePoint - objPos, 1.0);
+        }
+    
+        // ray marching tutorial http://jamie-wong.com/2016/07/15/ray-marching-signed-distance-functions/
+        float shortestDistanceToSurface(vec3 eye, vec3 marchingDirection, float start, float end) {
+            float depth = start;
+            // less than is being turned into &lt; by hugo for some reason...
+            for (int i = 0; i <; MAX_MARCHING_STEPS; i++) {
+                float dist = sceneSDF(eye + depth * marchingDirection);
+                if (dist <; EPSILON) {
+                    return depth;
+                }
+                depth += dist;
+                if (depth >= end) {
+                    return end;
+                }
+            }
+            return end;
+        }
+    
+        vec3 rayDirection(float fieldOfView, vec2 size, vec2 fragCoord) {
+            vec2 xy = fragCoord - size / 2.0;
+            float z = size.y / tan(radians(fieldOfView) / 2.0) / 2.0;
+            return normalize(vec3(xy, -z));
+        }
+    
+        vec3 estimateNormal(vec3 p) {
+            return normalize(vec3(
+                sceneSDF(vec3(p.x + EPSILON, p.y, p.z)) - sceneSDF(vec3(p.x - EPSILON, p.y, p.z)),
+                sceneSDF(vec3(p.x, p.y + EPSILON, p.z)) - sceneSDF(vec3(p.x, p.y - EPSILON, p.z)),
+                sceneSDF(vec3(p.x, p.y, p.z  + EPSILON)) - sceneSDF(vec3(p.x, p.y, p.z - EPSILON))
+            ));
+        }
+    
+        vec3 phongContribForLight(vec3 k_d, vec3 k_s, float alpha, vec3 p, vec3 eye, 
+                                    vec3 lightPos, vec3 lightIntensity) {
+            vec3 N = estimateNormal(p);
+            vec3 L = normalize(lightPos - p);
+            vec3 V = normalize(eye - p);
+            vec3 R = normalize(reflect(-L, N));
+    
+            float dotLN = clamp(dot(L, N), 0.0, 1.0); 
+            float dotRV = dot(R, V);
+    
+            // less than is being turned into &lt; by hugo for some reason...
+            if (dotLN < 0.0) 
+            {
+                // Light not visible from this point on the surface
+                return vec3(0.0, 0.0, 0.0);
+            } 
+            // less than is \074 in unicode
+            if (dotRV < 0.0) 
+            {
+                // Light reflection in opposite direction as viewer, apply only diffuse
+                // component
+                return lightIntensity * (k_d * dotLN);
+            }
+            return lightIntensity * (k_d * dotLN + k_s * pow(dotRV, alpha));
+        }
+    
+        vec3 phongIllumination(vec3 k_a, vec3 k_d, vec3 k_s, float alpha, vec3 p, vec3 eye) {
+            const vec3 ambientLight = 0.5 * vec3(1.0, 1.0, 1.0);
+            vec3 color = ambientLight * k_a;
+            
+            vec3 light1Pos = vec3(4.0 * sin(a_TimeSinceStart), 2.0, 4.0 * cos(a_TimeSinceStart));
+            vec3 light1Intensity = vec3(0.4, 0.4, 0.4);
+            
+            color += phongContribForLight(k_d, k_s, alpha, p, eye, light1Pos, light1Intensity);
+            
+            vec3 light2Pos = vec3(2.0 * sin(0.37 * a_TimeSinceStart),
+                                  2.0 * cos(0.37 * a_TimeSinceStart), 2.0);
+            vec3 light2Intensity = vec3(0.4, 0.4, 0.4);
+            
+            color += phongContribForLight(k_d, k_s, alpha, p, eye, light2Pos, light2Intensity);    
+            return color;
+        }
+    
+        void main() {
+    
+            // ray march stuff
+            vec3 dir = rayDirection(45.0, vec2(800, 500), gl_FragCoord.xy);        
+            vec3 eye = u_CamPos; //rayPos; //u_CamPos; //vec3(1.0, -1.0, 5.0);
+            float dist = shortestDistanceToSurface(eye, dir, MIN_DIST, MAX_DIST);
+            
+            if (dist > MAX_DIST - EPSILON) {
+                // Didn't hit anything
+                gl_FragColor = vec4(0.0, 0.50, 0.50, 0.0);
+                return;
+            }
+            
+            // phong stuff
+            vec3 p = eye + dist * dir;
+            vec3 K_a = vec3(0.2, 0.8, 0.2);
+            vec3 K_d = vec3(0.4, 0.5, 0.2);
+            vec3 K_s = vec3(1.0, 1.0, 1.0);
+            float shininess = 40.0;
+        
+            vec3 color = phongIllumination(K_a, K_d, K_s, shininess, p, eye);
+    
+            gl_FragColor = vec4(1.0);//vec4(color, 1.0);// u_FragColor; //vec4(1.0, 0.0, 0.0, 1.0);
+        }
+    </script>
+    
+    <script type="text/javascript" src="{{ .Site.BaseURL }}/lib/gl-matrix-min.js"></script>
+    <script type="text/javascript" src="{{ .Site.BaseURL }}/lib/webgl-utils.js"></script>
+    <script type="text/javascript" src="{{ .Site.BaseURL }}/lib/webgl-debug.js"></script>
+    <script type="text/javascript" src="{{ .Site.BaseURL }}/lib/cuon-utils.js"></script>
+    <script type="text/javascript" src="{{ .Site.BaseURL }}/lib/cuon-matrix.js"></script>
+    <script type="text/javascript" src="{{ .Site.BaseURL }}/lib/shader.js"></script>
+    <script type="text/javascript" src="{{ .Site.BaseURL }}/js/webgl.js"></script>
+
+
+</div>
