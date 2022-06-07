@@ -6,6 +6,6 @@ type: page
 
 ### Hello my projects are
 
-1. [Metaballs](/projects/webgl/)
+1. [Swedish Metaballs](/projects/webgl/)
 2. [Tatooine](/projects/tatooine/)
 
