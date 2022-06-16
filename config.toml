@@ -1,6 +1,6 @@
 baseURL = 'https://otakufreak13.github.io'
 languageCode = 'en-us'
-title = 'Björns Portfolio'
+title = 'WIP Portfolio for Björn'
 
 theme = "gokarna"
 defaultContentLanguage = "en"
@@ -11,7 +11,7 @@ enableRobotsTXT = true
 
 [params]
   footer = "Björn Johansson"
-  description = "A site made to showcase my experience, education and projects"
+  description = "Welcome to a site made to showcase my experience, education and projects."
   avatarURL = "/images/SelfieHiking.jpg"
   avatarSize = "size-m"
   customHeadHTML = """
@@ -25,7 +25,7 @@ enableRobotsTXT = true
   socialIcons = [
    # {name = "twitter", url = "https://example.com"},
     {name = "linkedin", url = "https://www.linkedin.com/in/bj%C3%B6rn-johansson-3b20371a8/"},
-    {name = "github", url = "https://github.com/otakufreak13"}
+    {name = "github", url = "https://github.com/otakufreak13"},
    # {name = "stackoverflow", url = "https://example.com"},
    # {name = "dribbble", url = "https://example.com"},
    # {name = "instagram", url = "https://example.com"},
@@ -36,9 +36,13 @@ enableRobotsTXT = true
 [menu]
   [[menu.main]]
     # Unique identifier for a menu item
-    identifier = "posts"
+    #identifier = "posts"
 
-    url = "/posts/"
+    #url = "/posts/"
+
+    identifier = "resume"
+
+    url = "/docs/ResumeBJ.pdf"
     
     # You can add extra information before the name (HTML format is supported), such as icons
     pre = ""
@@ -47,7 +51,7 @@ enableRobotsTXT = true
     post = ""
 
     # Display name
-    name = "Posts"
+    name = "Resume"
 
     # Weights are used to determine the ordering
     weight = 1
@@ -56,13 +60,13 @@ enableRobotsTXT = true
     identifier = "tags"
     name = "Tags"
     url = "/tags/"
-    weight = 2
+    weight = 3
     
   [[menu.main]]
     identifier = "projects"
     name = "Projects"
     url = "/projects/"
-    weight = 3
+    weight = 2
     
   [[menu.main]]
     identifier = "linkedin"

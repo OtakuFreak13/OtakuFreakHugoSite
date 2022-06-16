@@ -4,8 +4,7 @@ type: page
 ---
 
 
-### Hello my projects are
+### Showcase of my Projects
 
-1. [Swedish Metaballs](/projects/webgl/)
-2. [Tatooine](/projects/tatooine/)
 
+{{< showcaseshortcode >}}

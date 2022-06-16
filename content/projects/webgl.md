@@ -9,6 +9,7 @@ tags: ["3d", "programming", "webgl", "metaballs", "raymarching"]
 This is the colmination of the WebGL course I took.  
 Basicaly the only thing that is sent to the shaders is a rectrectangle, in my case a point that is very large, that covers the whole canvas.
 It is in this rectangle where all the raymarching takes place in the fragment shader.
+The core parts of the raymarching is from Jamie Wongs tutorial at http://jamie-wong.com/2016/07/15/ray-marching-signed-distance-functions/.
 
 {{< metaballsshortcode >}}
 
