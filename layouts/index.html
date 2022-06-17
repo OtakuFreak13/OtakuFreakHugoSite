@@ -11,9 +11,19 @@
 
 <div class="flex-break"></div>
 
+<style>
+button:hover{
+    color: var(--accent-color);
+    fill: var(--accent-color);
+}
+</style>
 {{ if isset .Site.Params "socialicons" }}
-<section class="social-icons">
-    <ul class="social-icons-list">
+<section class="social-icons" >
+    <ul class="social-icons-list" style="position:relative;">
+        <a >  
+            <button onclick="window.location.href='/docs/cv_bj.pdf'" style="position: absolute; top: -3%; left: -72%" >
+            <font size="+1">Resume</font></button>
+        </a>
         {{ range .Site.Params.SocialIcons }}
         <li class="social-icon">
             <a href="{{ .url }}">
