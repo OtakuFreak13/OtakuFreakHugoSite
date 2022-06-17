@@ -2,7 +2,7 @@
 title: Swedish Metaballs 
 date: 2022-03-23
 type: post
-tags: ["3d", "programming", "webgl", "metaballs", "raymarching"]
+tags: ["3d", "programming", "webgl", "metaballs", "raymarching", "javascript"]
 ---
 
 ## Metaballs in WebGL

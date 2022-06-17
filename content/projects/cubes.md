@@ -2,7 +2,7 @@
 title: 3D Cubes in WebGL
 date: 2021-02-22
 type: post
-tags: ["3d", "programming", "webgl"]
+tags: ["3d", "programming", "webgl", "javascript"]
 draft: true
 ---
 
