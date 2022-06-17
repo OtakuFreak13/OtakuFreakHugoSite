@@ -1,6 +1,6 @@
 baseURL = 'https://otakufreak13.github.io'
 languageCode = 'en-us'
-title = 'WIP Portfolio for Björn'
+title = 'Portfolio for Björn'
 
 theme = "gokarna"
 defaultContentLanguage = "en"
@@ -11,7 +11,7 @@ enableRobotsTXT = true
 
 [params]
   footer = "Björn Johansson"
-  description = "Welcome to a site made to showcase my experience, education and projects."
+  description = "Welcome! I'm a C++ programmer with an education in Game and Software Engineering"
   avatarURL = "/images/SelfieHiking.jpg"
   avatarSize = "size-m"
   customHeadHTML = """
@@ -33,6 +33,8 @@ enableRobotsTXT = true
   ]
   metaKeywords = ["portfolio", "programmer", "gamedev"]
 
+  showpostsonhomepage = "recent"
+
 [menu]
   [[menu.main]]
     # Unique identifier for a menu item
@@ -42,7 +44,7 @@ enableRobotsTXT = true
 
     identifier = "resume"
 
-    url = "/docs/ResumeBJ.pdf"
+    url = "/docs/cv_bj.pdf"
     
     # You can add extra information before the name (HTML format is supported), such as icons
     pre = ""
@@ -69,9 +71,13 @@ enableRobotsTXT = true
     weight = 2
     
   [[menu.main]]
-    identifier = "linkedin"
-    url = "https://www.linkedin.com/in/bj%C3%B6rn-johansson-3b20371a8/"
+    #identifier = "linkedin"
+    #url = "https://www.linkedin.com/in/bj%C3%B6rn-johansson-3b20371a8/"
+    #weight = 4
+    identifier = "github"
+    pre = "<span data-feather='github'></span>"
+    url = "https://github.com/OtakuFreak13/OtakuFreakHugoSite"
     weight = 4
     
     # We use feather-icons: https://feathericons.com/
-    pre = "<span data-feather='linkedin'></span>"
+    #pre = "<span data-feather='linkedin'></span>"

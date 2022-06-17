@@ -1,6 +1,6 @@
 ---
 title: "LargeGameProject"
-date: 2022-06-16T02:00:14+02:00
+date: 2021-01-10
 type: post
 tags: ["DX12", "game", "project", "3D", "programming"]
 image: /images/hellLoopPosterClean.jpg

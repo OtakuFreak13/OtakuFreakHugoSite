@@ -1,6 +1,6 @@
 ---
 title: 3D Cubes in WebGL
-date: 2022-06-07
+date: 2021-02-22
 type: post
 tags: ["3d", "programming", "webgl"]
 draft: true

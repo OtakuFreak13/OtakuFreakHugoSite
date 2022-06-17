@@ -1,6 +1,6 @@
 ---
 title: "SmallGameProject"
-date: 2022-06-16T02:27:15+02:00
+date: 2020-03-23
 type: post
 tags: ["OpenGL", "game", "project", "3D", "programming"]
 showTableOfContents: false
